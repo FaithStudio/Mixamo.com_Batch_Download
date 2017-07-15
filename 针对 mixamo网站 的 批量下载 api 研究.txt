@@ -1,0 +1,70 @@
+针对 mixamo网站 的 批量下载 api 研究
+
+动作列表json
+https://www.mixamo.com/api/v1/products?page=1&limit=96
+
+列表里每个动作的数据格式
+category:""
+character_type:"human"
+description:"on right leg"
+favorited:false
+favorites_count:0
+free:false
+id:"2f5857bd-4736-411a-86ab-703847ac7979"
+in_cart:false
+motion_id:"7f5155b3-c4d4-48eb-9a09-bd9f9ad3da6a"
+name:"Female Action Pose"
+price:0
+purchase_count:0
+purchased:false
+thumbnail:"https://d1kjg13180a24z.cloudfront.net/thumbnails/motions/140000901/static.png"
+thumbnail_animated:"https://d1kjg13180a24z.cloudfront.net/thumbnails/motions/140000901/animated.gif"
+type:"Motion"
+
+
+收藏动作api
+https://www.mixamo.com/api/v1/cart/items
+post发送
+product_id 动作的id
+character_id 固定值为 bcec63d1-ba21-11e4-ab39-06dac1a48deb 即默认的人物模型
+
+个人资源库
+https://www.mixamo.com/api/v1/assets?type=Motion%2CMotionSet&limit=96&page=1
+列表中的数据 格式
+character_id:"bcec63d1-ba21-11e4-ab39-06dac1a48deb"
+character_name:"Beta"
+character_thumbnail:"//www.mixamo.com/site-content/thumbnails/character/static_character_112879-first.gif?1442867296"
+download_parameters:{options: {,…}}
+download_settings:{format: "fbx7", fps: 30, skin: true, reducekf: 0, global_gms_hash: {overdrive: 0, lock-root: false},…}
+download_url:"https://s3-us-west-2.amazonaws.com/mixamo.internal-site-content/exports/18127f2a-776b-45f4-986d-3c67b2286ec9/slow_run.fbx?AWSAccessKeyId=AKIAIRAUCFY4PGB4Y7JQ&Expires=1500726883&Signature=TvsQlVWDRUxIGNDqzsLEqHFTRGA%3D"
+download_url_expires_at:"1500722998"
+downloadable:true
+id:"9ada08e8-5316-48b4-97f1-51078025c2ff"
+message:null
+name:"sword and shield walk"
+payload_id:"50efea43-ba22-11e4-ab39-06dac1a48deb"
+payload_type:"Product"
+purchased:true
+status:"ready"
+thumbnail:"//www.mixamo.com/thumbnails/downloadable_asset/9ada08e8-5316-48b4-97f1-51078025c2ff/static.gif?1500063323"
+type:"Motion"
+
+个人资源库删除动作
+https://www.mixamo.com/api/v1/assets/delete
+post 发送 
+ids[]=资源id 1
+ids[]=资源id 2
+ids[]=资源id 3
+
+重新将动作加入到资源库
+https://www.mixamo.com/api/v1/assets?type=Motion%2CMotionSet&limit=96&page=1&character_id=bcec63d1-ba21-11e4-ab39-06dac1a48deb&motion_id=7f5155b3-c4d4-48eb-9a09-bd9f9ad3da6a&revive=true
+
+将动作资源提交到下载列表
+https://www.mixamo.com/api/v1/assets/593553aa-bf89-489c-961a-77671b3db130/download
+网址中的id为资源id
+Post 发送
+{"download_settings":{"format":"fbx7","fps":30,"skin":false,"reducekf":0}}
+
+
+
+payload_id 与 store 中的id相对应，可以用来匹配动画预览图片
