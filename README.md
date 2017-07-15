@@ -23,6 +23,8 @@
 * 非cn地区账号
 * [Aria2c下载软件](https://github.com/aria2/aria2)
 * 如果账号的My Animations中已经有动作或动作合集，无需删除，因为不会重复添加，动作合集也不会下载
+* 将js文件添加到Tampermonkey，过程略
+
 
 ### 准备工作
 * Chrome打开[Mixamo.com](https://mixamo.com)
