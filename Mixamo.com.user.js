@@ -21,7 +21,7 @@ $(function(){
 
     //将Store整页的动作加入到资源库
     window.GetStoreList=function(callback){
-        const pageUrl = 'https://www.mixamo.com/api/v1/products?page={page}&limit=96';
+        const pageUrl = 'https://www.mixamo.com/api/v1/products?page={page}&limit=96&type=Motion';
         const funs = [];
         let items = [];
         $.get('https://www.mixamo.com/api/v1/products?page=1&limit=96').done(data=>{
@@ -49,7 +49,7 @@ $(function(){
 
     //重新将单个动作添加到资源库
     window.ReAddToAsset = function (item, characterID, callback){
-        let url = 'https://www.mixamo.com/api/v1/assets?type=Motion%2CMotionSet&limit=96&page=1&character_id={characterID}&motion_id={motion_id}&revive=true';
+        let url = 'https://www.mixamo.com/api/v1/assets?type=Motion&limit=96&page=1&character_id={characterID}&motion_id={motion_id}&revive=true';
         url = url.replace('{motion_id}',item.motion_id);
         url = url.replace('{characterID}',characterID);
         let ajax = $.get(url);
@@ -161,14 +161,15 @@ $(function(){
         socket.send(JSON.stringify(download));
 
         //下载预览图
-        download = {jsonrpc:'2.0',method:'aria2.addUri',id:id+'_2',
-                    params:[[item.image],{out:item.name+'.gif',dir:item.folder,split:1,"max-connection-per-server":1}]};
-        socket.send(JSON.stringify(download));
+        if(_.isArray(item.images)){
+            download = {jsonrpc:'2.0',method:'aria2.addUri',id:id+'_2',
+                        params:[[item.images[0]],{out:item.name+'.png',dir:item.folder,split:1,"max-connection-per-server":1}]};
+            socket.send(JSON.stringify(download));
 
-        //下载预览图
-        // download = {jsonrpc:'2.0',method:'aria2.addUri',id:id+'_3',
-        //             params:[[item.images[1]],{dir:item.folder,split:1,"max-connection-per-server":1}]};
-        // socket.send(JSON.stringify(download));
+            download = {jsonrpc:'2.0',method:'aria2.addUri',id:id+'_3',
+                        params:[[item.images[1]],{out:item.name+'.gif',dir:item.folder,split:1,"max-connection-per-server":1}]};
+            socket.send(JSON.stringify(download));
+        }
     };
 
     //获取所有账号资源库中的所有角色
@@ -220,13 +221,13 @@ $(function(){
         $target.append($clearAsset);
 
         //从下载队列下载文件 按钮
-        const $downloadToFile = $('<button class="pull-right btn btn-default">从下载队列下载文件</button>');
+        const $downloadToFile = $('<button class="pull-right btn btn-default">3. 从下载队列下载文件</button>');
         $downloadToFile.click(()=>{
             let path = window.prompt('要把文件放到哪',folderPath);
             if(_.isEmpty(path))
                 return alert('取消下载或路径为空');
-            if(path.lastIndexOf('/')!=path.length-1);
-            path +='/';
+            if(path.lastIndexOf('/')!=(path.length-1))
+                path +='/';
             const files = {};
             const sameName = {};//重名检测
             //从Store的item获取到预览图片,串行操作
@@ -251,17 +252,17 @@ $(function(){
                     });
                     console.log('下载files',Object.keys(files).length);
                     cb();
+                });
+                    },
+                cb=>{
+                    GetStoreList(items=>{//从Store中获取预览图片
+                        items.forEach(item=>{
+                            if(files[item.id])
+                                files[item.id].images=[item.thumbnail,item.thumbnail_animated];
+                        });
+                        cb();
                     });
                 },
-                // 从Store获取预览无效，因为无法对应到Asset的item
-                // cb=>{
-                //     GetStoreList(items=>{//从Store中获取预览图片
-                //         items.forEach(item=>{
-                //             files[item.id].images=[item.thumbnail,item.thumbnail_animated];
-                //         });
-                //         cb();
-                //     });
-                // },
                 cb=>{
                     for(let key in files){
                         DownloadFile(files[key]);
@@ -270,14 +271,14 @@ $(function(){
                 },
             ],()=>{
                 const num = Object.keys(files).length;
-                console.log('一共有 '+num+' 个文件夹');
-                console.log('一共有 '+(num*2)+' 个文件');
+                console.log('一共有',num,'个文件夹');
+                console.log('一共有 ',num*3,'个文件');
             });
         });
         $target.append($downloadToFile);
 
         //把资源库动作提交到下载队列 按钮
-        const $AssetToDownload = $('<button class="pull-right btn btn-default">把所有资源添加到下载队列</button>');
+        const $AssetToDownload = $('<button class="pull-right btn btn-default">2. 把所有资源添加到下载队列</button>');
         $AssetToDownload.click(()=>{
             if(socket.readyState !== 1)
                 return alert('无法连接到Aria2c，不能批量下载');
@@ -298,7 +299,7 @@ $(function(){
         $target.append($AssetToDownload);
 
         //选择角色后创建所有动作到资源库 下拉选择框
-        const $CreateCharacterMotions = $('<div class="pull-right btn btn-default"><select><option value="0">选择一个角色创建所有动作</option></select></div>');
+        const $CreateCharacterMotions = $('<div class="pull-right btn btn-default">1. <select><option value="0">选择一个角色创建所有动作</option></select></div>');
         GetCharacters(characters=>{
             const $select = $CreateCharacterMotions.find('select');
             characters.forEach(c=>{
@@ -319,6 +320,8 @@ $(function(){
             };
             GetStoreList(items=>{
                 items.forEach(item=>{
+                    if(item.type != 'Motion')
+                        return;
                     queue.push([cb=>{AddToAsset(item,characterID,cb);},cb=>{ReAddToAsset(item,characterID,cb);}]);
                 });
                 console.log('一共'+queue.length()+'个任务');
